@@ -1,0 +1,166 @@
+A51 MACRO ASSEMBLER  TWO_BINARY_WATCH                                                     03/31/2013 23:20:07 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.00
+OBJECT MODULE PLACED IN two-binary-watch.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\C51\BIN\A51.EXE two-binary-watch.asm SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1             ORG 00H
+0000 0182              2             JMP MAIN
+                       3     
+000B                   4             ORG 0BH
+000B 8000              5             JMP Timer0_interrupt
+                       6     
+000D                   7     Timer0_interrupt:
+000D BF0042            8             CJNE R7,#0,reload_Timer0_1
+0010 12005A            9             LCALL Add_second
+0013 300030           10             JNB 20H.0,reload_Timer0_2
+0016 120063           11             LCALL Add_minute
+0019 30011E           12             JNB 20H.1,reload_Timer0_3
+001C 12006C           13             LCALL Add_hour
+001F 30020C           14             JNB 20H.2,reload_Timer0_4
+0022 120075           15             LCALL display_time
+0025 7F14             16             MOV R7,#20
+0027 758C3C           17             MOV TH0,#HIGH (65536-50000)
+002A 758AB0           18             MOV TL0,#LOW (65536-50000)
+002D 32               19             RETI
+002E                  20     reload_Timer0_4:
+002E 120075           21             LCALL display_time
+0031 7F14             22             MOV R7,#20
+0033 758C3C           23             MOV TH0,#HIGH (65536-50000)
+0036 758AB0           24             MOV TL0,#LOW (65536-50000)
+0039 32               25             RETI
+003A                  26     reload_Timer0_3:
+003A 120075           27             LCALL display_time
+003D 7F14             28             MOV R7,#20
+003F 758C3C           29             MOV TH0,#HIGH (65536-50000)
+0042 758AB0           30             MOV TL0,#LOW (65536-50000)
+0045 32               31             RETI
+0046                  32     reload_Timer0_2:
+0046 120075           33             LCALL display_time
+0049 7F14             34             MOV R7,#20
+004B 758C3C           35             MOV TH0,#HIGH (65536-50000)
+004E 758AB0           36             MOV TL0,#LOW (65536-50000)
+0051 32               37             RETI
+0052                  38     reload_Timer0_1:                                   
+0052 1F               39             DEC R7
+                      40             ;reload Timer0
+0053 758C3C           41             MOV TH0,#HIGH (65536-50000)
+0056 758AB0           42             MOV TL0,#LOW (65536-50000)
+0059 32               43             RETI
+                      44     
+                      45     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      46     ;subroutine name:Add_second
+                      47     ;function: second+1. If second=60, clear second and set second overflow flag 20H.0
+005A                  48     Add_second:
+005A 08               49             INC R0
+005B B83C04           50             CJNE R0,#60,finish_add_second
+005E 7800             51             MOV R0,#0
+0060 D200             52             SETB 20H.0
+0062                  53     finish_add_second:
+0062 22               54             RET
+                      55     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      56     
+                      57     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      58     ;subroutine name:Add_minute
+A51 MACRO ASSEMBLER  TWO_BINARY_WATCH                                                     03/31/2013 23:20:07 PAGE     2
+
+                      59     ;function: minute+1. If minute=60, clear minute and set minute overflow flag 20H.1
+0063                  60     Add_minute:
+0063 09               61             INC R1
+0064 B93C04           62             CJNE R1,#60,finish_add_minute
+0067 7900             63             MOV R1,#0
+0069 D201             64             SETB 20H.1
+006B                  65     finish_add_minute:
+006B 22               66             RET
+                      67     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      68     
+                      69     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      70     ;subroutine name:Add_hour
+                      71     ;function:hour+1. If hour=24, clear hour and set hour overflow flag 20H.2
+006C                  72     Add_hour:
+006C 0A               73             INC R2
+006D BA1804           74             CJNE R2,#24,finish_add_hour
+0070 7A00             75             MOV R2,#0
+0072 D202             76             SETB 20H.2
+0074                  77     finish_add_hour:
+0074 22               78             RET
+                      79     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      80     
+                      81     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      82     ;subroutine name: display_time
+                      83     ;function: display time that stored in R2(hour):R1(minute):R0(second)
+0075                  84     display_time:
+0075 EA               85             MOV A,R2
+0076 F4               86             CPL A
+0077 F580             87             MOV P0,A
+0079 E9               88             MOV A,R1
+007A F4               89             CPL A
+007B F5A0             90             MOV P2,A
+007D E8               91             MOV A,R0
+007E F4               92             CPL A
+007F F590             93             MOV P1,A
+0081 22               94             RET
+                      95     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      96     
+0082                  97     MAIN:
+                      98             ;use R0 to store second
+0082 7800             99             MOV R0,#0
+                     100             ;use R1 to store minute
+0084 7900            101             MOV R1,#0
+                     102             ;use R2 to store hour
+0086 7A00            103             MOV R2,#0
+                     104             ;set Timer0 16 bit
+0088 5389F1          105             ANL TMOD,#11110001B
+008B 438901          106             ORL TMOD,#00000001B
+                     107             ;set Timer0 50000us
+008E 758C3C          108             MOV TH0,#HIGH (65536-50000)
+0091 758AB0          109             MOV TL0,#LOW (65536-50000)
+0094 D28C            110             SETB TR0
+                     111             ;use R7 to count time
+0096 7F14            112             MOV R7,#20
+                     113             ;set interrupt
+0098 D2A9            114             SETB ET0
+009A D2AF            115             SETB EA
+                     116             ;display initial time
+009C 120075          117             LCALL display_time
+009F 80FE            118             JMP $
+                     119             END
+A51 MACRO ASSEMBLER  TWO_BINARY_WATCH                                                     03/31/2013 23:20:07 PAGE     3
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+ADD_HOUR . . . . .  C ADDR   006CH   A   
+ADD_MINUTE . . . .  C ADDR   0063H   A   
+ADD_SECOND . . . .  C ADDR   005AH   A   
+DISPLAY_TIME . . .  C ADDR   0075H   A   
+EA . . . . . . . .  B ADDR   00A8H.7 A   
+ET0. . . . . . . .  B ADDR   00A8H.1 A   
+FINISH_ADD_HOUR. .  C ADDR   0074H   A   
+FINISH_ADD_MINUTE.  C ADDR   006BH   A   
+FINISH_ADD_SECOND.  C ADDR   0062H   A   
+MAIN . . . . . . .  C ADDR   0082H   A   
+P0 . . . . . . . .  D ADDR   0080H   A   
+P1 . . . . . . . .  D ADDR   0090H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+RELOAD_TIMER0_1. .  C ADDR   0052H   A   
+RELOAD_TIMER0_2. .  C ADDR   0046H   A   
+RELOAD_TIMER0_3. .  C ADDR   003AH   A   
+RELOAD_TIMER0_4. .  C ADDR   002EH   A   
+TH0. . . . . . . .  D ADDR   008CH   A   
+TIMER0_INTERRUPT .  C ADDR   000DH   A   
+TL0. . . . . . . .  D ADDR   008AH   A   
+TMOD . . . . . . .  D ADDR   0089H   A   
+TR0. . . . . . . .  B ADDR   0088H.4 A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)
