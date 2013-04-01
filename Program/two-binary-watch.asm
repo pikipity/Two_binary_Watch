@@ -10,6 +10,9 @@
 	ORG 13H
 	JMP Increase_time
 
+	ORG 23H
+	JMP UART
+
 Timer0_interrupt:
 	CJNE R7,#0,reload_Timer0_1;2us
 	LCALL Add_second;2us
@@ -173,8 +176,113 @@ L2: LCALL Delay_1ms
 	RET
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;subroutine name: ASCII2binary
+;function: convert ASCII to binary
+;input:    19H:18H
+;output:   17H
+ASCII2binary:
+	PUSH Acc
+	PUSH B
+	;
+	MOV A,19H
+	ANL A,#00001111B
+	MOV B,#10
+	MUL AB
+	MOV 19H,A
+	;
+	MOV A,18H
+	ANL A,#00001111B
+	;
+	MOV B,19H
+	ADD A,B
+	MOV 17H,A
+	;
+	POP B
+	POP Acc
+	RET
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+UART:
+	JB TI,UART_finish
+	CLR RI
+	;
+	CJNE R5,#0,determine_R5_1
+	CLR TR0
+	INC R5
+determine_R5_1:
+	CJNE R5,#1,determine_R5_2
+	INC R5
+	MOV A,SBUF
+	MOV 1FH,A
+	JMP UART_finish
+determine_R5_2:
+	CJNE R5,#2,determine_R5_3
+	INC R5
+	MOV A,SBUF
+	MOV 1EH,A
+	;
+	MOV A,1FH
+	MOV 19H,A
+	MOV A,1EH
+	MOV 18H,A
+	LCALL ASCII2binary
+	MOV R2,17H
+	;
+	JMP UART_finish
+determine_R5_3:
+	CJNE R5,#3,determine_R5_4
+	INC R5
+	MOV A,SBUF
+	MOV 1DH,A
+	JMP UART_finish
+determine_R5_4:
+	CJNE R5,#4,determine_R5_5
+	INC R5
+	MOV A,SBUF
+	MOV 1CH,A
+	;
+	MOV A,1DH
+	MOV 19H,A
+	MOV A,1CH
+	MOV 18H,A
+	LCALL ASCII2binary
+	MOV R1,17H
+	;
+	JMP UART_finish
+determine_R5_5:
+	CJNE R5,#5,determine_R5_6
+	INC R5
+	MOV A,SBUF
+	MOV 1BH,A
+	JMP UART_finish
+determine_R5_6:
+	MOV R5,#0
+	MOV A,SBUF
+	MOV 1AH,A
+	;
+	MOV A,1BH
+	MOV 19H,A
+	MOV A,1AH
+	MOV 18H,A
+	LCALL ASCII2binary
+	MOV R0,17H
+	;
+begin_time:
+	MOV TH0,#HIGH (65536-50000)
+	MOV TL0,#LOW (65536-50000)
+	SETB TR0	
+UART_finish:
+	CLR TI
+	RETI
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+
 
 MAIN:
+	;use R5 to conut number of receiving from UART
+	MOV R5,#0
 	;use R6 to count number of INT0
 	MOV R6,#0
 	;use R0 to store second
@@ -183,18 +291,27 @@ MAIN:
 	MOV R1,#0
 	;use R2 to store hour
 	MOV R2,#0
+	;set serial port
+	CLR SM0
+	SETB SM1
+	CLR SM2
+	SETB REN
+	ANL PCON,#01111111B
+	;set bound rate
+	MOV TMOD,#00100001B
+	MOV TH1,#0F3H
+	SETB TR1
+	SETB ES
 	;set INT0 and INT1
 	SETB EX0
 	SETB IT0
 	SETB EX1
 	SETB IT1
-	;set Timer0 16 bit
-	ANL TMOD,#11110001B
-	ORL TMOD,#00000001B
 	;set Timer0 50000us
 	MOV TH0,#HIGH (65536-50000)
 	MOV TL0,#LOW (65536-50000)
 	SETB TR0
+	SETB PS
 	;use R7 to count time
 	MOV R7,#20
 	;set interrupt
