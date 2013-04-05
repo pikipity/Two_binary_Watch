@@ -7,3 +7,9 @@ C:\Documents and Settings\Administrator\My Documents\GitHub\Two_binary_Watch\Pro
 Project File Date:  04/01/2013
 
 <h2>Output:</h2>
+Build target 'Target 1'
+assembling two-binary-watch.asm...
+linking...
+Program Size: data=8.0 xdata=0 code=518
+creating hex file from "two-binary-watch"...
+"two-binary-watch" - 0 Error(s), 0 Warning(s).

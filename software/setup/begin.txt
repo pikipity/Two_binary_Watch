@@ -1,0 +1,5 @@
+This is a simple program to sync your comuputer system time to binary watch.
+
+If you find any problems or bugs, please feel free to contact me by e-mail "pikipityw@gmail.com" or go to my blog "pikipity.github.com".
+
+Thank you.
