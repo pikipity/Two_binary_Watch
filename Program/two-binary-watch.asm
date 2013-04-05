@@ -25,28 +25,28 @@ Timer0_interrupt:
 	MOV TH0,#HIGH (65536-50000+57);2us
 	MOV TL0,#LOW (65536-50000+57);2us
 	LCALL display_time;11us
-	MOV 20H,#0
+	MOV 20H,#0;2us
 	RETI;2us
 reload_Timer0_4:
 	MOV R7,#20;2us
 	MOV TH0,#HIGH (65536-50000+54);2us
 	MOV TL0,#LOW (65536-50000+54);2us
 	LCALL display_time;11us
-	MOV 20H,#0
+	MOV 20H,#0;2us
 	RETI;2us
 reload_Timer0_3:
 	MOV R7,#20;2us
 	MOV TH0,#HIGH (65536-50000+42);2us
 	MOV TL0,#LOW (65536-50000+42);2us
 	LCALL display_time;11us
-	MOV 20H,#0
+	MOV 20H,#0;2us
 	RETI;2us
 reload_Timer0_2:
 	MOV R7,#20;2us
 	MOV TH0,#HIGH (65536-50000+30);2us
 	MOV TL0,#LOW (65536-50000+30);2us
 	LCALL display_time;11us
-	MOV 20H,#0
+	MOV 20H,#0;2us
 	RETI;2us
 reload_Timer0_1:				   
 	DEC R7;1us
