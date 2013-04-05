@@ -275,6 +275,7 @@ determine_R5_6:
 	MOV R0,17H
 	;
 begin_time:
+	MOV R7,#20
 	MOV TH0,#HIGH (65536-50000)
 	MOV TL0,#LOW (65536-50000)
 	SETB TR0	
